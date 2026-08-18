@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CalcPro™ — Resultado Premium</title>
+<style>
+  :root{
+    --bg: #0b0d10;
+    --panel: #14171c;
+    --panel2: #1c2027;
+    --accent: #2ee6a6;
+    --accent-dim: #17402f;
+    --danger: #ff5470;
+    --gold: #f4c542;
+    --text: #eef1f4;
+    --muted: #7c8592;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background: radial-gradient(circle at 50% -10%, #1a2029 0%, var(--bg) 60%);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+
+  .phone{
+    width: 340px;
+    background: var(--panel);
+    border-radius: 28px;
+    padding: 18px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.7), 0 0 0 1px #23272e;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 14px;
+  }
+  .brand-name{
+    font-weight: 800;
+    letter-spacing: .5px;
+    font-size: 15px;
+  }
+  .brand-name span{ color: var(--accent); }
+  .badge{
+    font-size: 10px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold), #d69b1a);
+    color: #2a1e00;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: .3px;
+  }
+
+  .display{
+    background: var(--panel2);
+    border-radius: 16px;
+    padding: 22px 16px;
+    text-align: right;
+    margin-bottom: 14px;
+    min-height: 74px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap: 4px;
+  }
+  .display .expr{
+    color: var(--muted);
+    font-size: 14px;
+    min-height: 16px;
+    word-break: break-all;
+  }
+  .display .value{
+    font-size: 32px;
+    font-weight: 700;
+    word-break: break-all;
+  }
+  .locked-tag{
+    font-size: 11px;
+    color: var(--gold);
+    text-align:right;
+    margin: -6px 2px 10px;
+    font-weight: 600;
+    opacity: .9;
+  }
+
+  .keys{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button.key{
+    border:none;
+    border-radius: 14px;
+    padding: 16px 0;
+    font-size: 17px;
+    font-weight: 600;
+    background: var(--panel2);
+    color: var(--text);
+    cursor:pointer;
+    transition: transform .08s ease, background .15s ease;
+  }
+  button.key:active{ transform: scale(.94); }
+  button.key.op{ background:#20262f; color: var(--accent); }
+  button.key.clear{ background:#2a1c22; color: var(--danger); }
+  button.key.eq{
+    background: linear-gradient(135deg, var(--accent), #14b083);
+    color:#052018;
+    grid-column: span 2;
+  }
+  button.key.zero{ grid-column: span 2; }
+
+  .footer-note{
+    text-align:center;
+    font-size: 10.5px;
+    color:#14b083;
+    margin-top: 14px;
+    line-height: 1.4;
+  }
+
+  /* ---- PAYWALL ---- */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(4,5,7,.72);
+    backdrop-filter: blur(6px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+    z-index: 10;
+  }
+  .overlay.show{ display:flex; }
+
+  .sheet{
+    width: 100%;
+    max-width: 340px;
+    background: var(--panel);
+    border-radius: 24px;
+    padding: 22px 20px 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6);
+    animation: rise .28s ease;
+    border: 1px solid #23272e;
+  }
+  @keyframes rise{
+    from{ transform: translateY(24px); opacity:0; }
+    to{ transform: translateY(0); opacity:1; }
+  }
+
+  .sheet h2{
+    font-size: 18px;
+    margin: 4px 0 2px;
+  }
+  .sheet .sub{
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 16px;
+    line-height:1.4;
+  }
+  .lock-icon{
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold), #d69b1a);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .plans{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .plan{
+    border: 1.5px solid #262b33;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .plan:hover{ border-color: var(--accent); background: var(--accent-dim); }
+  .plan.selected{ border-color: var(--accent); background: var(--accent-dim); }
+  .plan .ptitle{ font-size: 13.5px; font-weight:700; }
+  .plan .pdesc{ font-size: 11px; color: var(--muted); margin-top:2px; }
+  .plan .pprice{ font-size: 14px; font-weight:800; color: var(--accent); white-space:nowrap; }
+  .plan .old{ text-decoration: line-through; color: var(--muted); font-size:11px; margin-right:4px; }
+
+  .pay-btn{
+    width:100%;
+    border:none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #14b083);
+    color:#052018;
+    cursor:pointer;
+    margin-bottom: 10px;
+  }
+  .pay-btn:active{ transform: scale(.98); }
+
+  .cancel-link{
+    display:block;
+    text-align:center;
+    font-size: 12px;
+    color: var(--muted);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding: 4px;
+    width:100%;
+  }
+
+  .fine-print{
+    font-size: 9.5px;
+    color: #4b525c;
+    text-align:center;
+    margin-top: 12px;
+    line-height:1.5;
+  }
+
+  /* ---- SUCCESS TOAST ---- */
+  .toast{
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel2);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    transition: bottom .4s ease;
+    z-index: 20;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  .toast.show{ bottom: 24px; }
+  .toast .dot{
+    width:8px; height:8px; border-radius:50%;
+    background: var(--accent);
+  }
+
+  .rodape {
+  
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color:#14b083;
+  background: var(--panel);
+  }
+</style>
+</head>
+<body>
+
+  <div class="phone">
+    <div class="brand">
+      <div class="brand-name">Calc<span>Pro</span>™</div>
+      <div class="badge">FREEMIUM</div>
+    </div>
+
+    <div class="display">
+      <div class="expr" id="expr">&nbsp;</div>
+      <div class="value" id="value">0</div>
+    </div>
+    <div class="locked-tag" id="lockedTag" style="visibility:hidden;">🔒 resultado bloqueado</div>
+
+    <div class="keys">
+      <button class="key clear" onclick="clearAll()">C</button>
+      <button class="key op" onclick="pushOp('/')">÷</button>
+      <button class="key op" onclick="pushOp('*')">×</button>
+      <button class="key op" onclick="backspace()">⌫</button>
+
+      <button class="key" onclick="pushNum('7')">7</button>
+      <button class="key" onclick="pushNum('8')">8</button>
+      <button class="key" onclick="pushNum('9')">9</button>
+      <button class="key op" onclick="pushOp('-')">−</button>
+
+      <button class="key" onclick="pushNum('4')">4</button>
+      <button class="key" onclick="pushNum('5')">5</button>
+      <button class="key" onclick="pushNum('6')">6</button>
+      <button class="key op" onclick="pushOp('+')">+</button>
+
+      <button class="key" onclick="pushNum('1')">1</button>
+      <button class="key" onclick="pushNum('2')">2</button>
+      <button class="key" onclick="pushNum('3')">3</button>
+      <button class="key" onclick="pushNum('.')">.</button>
+
+      <button class="key zero" onclick="pushNum('0')">0</button>
+      <button class="key eq" onclick="tryEquals()">=</button>
+    </div>
+
+    <div class="footer-note">Somar é de graça. Ver a soma é Premium.</div>
+  </div>
+
+  <!-- PAYWALL -->
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <div class="lock-icon">🔒</div>
+      <h2>Seu resultado está pronto!</h2>
+      <p class="sub">Mas calcular é grátis, <b>exibir</b> é Premium. Escolha um plano pra desbloquear este número (e só este número).</p>
+
+      <div class="plans">
+        <div class="plan selected" data-price="R$ 0,99" onclick="selectPlan(this)">
+          <div>
+            <div class="ptitle">Avulso</div>
+            <div class="pdesc">Libera só o resultado atual</div>
+          </div>
+          <div class="pprice">$ 10,99</div>
+        </div>
+        <div class="plan" data-price="R$ 14,90/mês" onclick="selectPlan(this)">
+          <div>
+            <div class="ptitle">CalcPro Mensal</div>
+            <div class="pdesc">Resultados ilimitados, cancele quando quiser*</div>
+          </div>
+          <div class="pprice"><span class="old">$ 129,90</span>$ 64,90/mês</div>
+        </div>
+        <div class="plan" data-price="R$ 149,90/ano" onclick="selectPlan(this)">
+          <div>
+            <div class="ptitle">CalcPro Anual</div>
+            <div class="pdesc">2 meses grátis + emoji de foguete 🚀</div>
+          </div>
+          <div class="pprice">$ 549,90/ano</div>
+        </div>
+      </div>
+
+      <button class="pay-btn" onclick="fakePay()">Pagar e ver o resultado</button>
+      <button class="cancel-link" onclick="closeOverlay()">Continuar sem saber quanto é</button>
+
+      <div class="fine-print">*Cancelar exige ligar em horário comercial, falar com 3 atendentes e responder por que você quer ir embora. É de meme, calma.</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span class="dot"></span> Pagamento aprovado. Resultado liberado!</div>
+
+
+  <footer class="rodape">Desenvolvido por @GUIISOUZAX</footer>
+
+<script>
+let a = '';
+let op = null;
+let b = '';
+let result = null;
+let lastPendingResult = null;
+
+const exprEl = document.getElementById('expr');
+const valueEl = document.getElementById('value');
+const lockedTag = document.getElementById('lockedTag');
+
+function render(){
+  if(op === null){
+    exprEl.innerHTML = '&nbsp;';
+    valueEl.textContent = a || '0';
+  } else {
+    exprEl.textContent = `${a} ${opSymbol(op)} ${b}`;
+    valueEl.textContent = b || a || '0';
+  }
+}
+function opSymbol(o){
+  return {'+':'+','-':'−','*':'×','/':'÷'}[o] || o;
+}
+
+function pushNum(n){
+  if(op === null){
+    if(n === '.' && a.includes('.')) return;
+    a += n;
+  } else {
+    if(n === '.' && b.includes('.')) return;
+    b += n;
+  }
+  render();
+}
+
+function pushOp(o){
+  if(a === '') return;
+  if(b !== ''){
+    // encadeia: resolve o pendente primeiro, sem paywall, pra continuar digitando
+    a = String(computeRaw(a, op, b));
+    b = '';
+  }
+  op = o;
+  render();
+}
+
+function backspace(){
+  if(op === null){
+    a = a.slice(0, -1);
+  } else if(b !== ''){
+    b = b.slice(0, -1);
+  } else {
+    op = null;
+  }
+  render();
+}
+
+function clearAll(){
+  a=''; op=null; b=''; result=null;
+  lockedTag.style.visibility = 'hidden';
+  render();
+}
+
+function computeRaw(x, o, y){
+  const nx = parseFloat(x || '0');
+  const ny = parseFloat(y || '0');
+  let r;
+  switch(o){
+    case '+': r = nx + ny; break;
+    case '-': r = nx - ny; break;
+    case '*': r = nx * ny; break;
+    case '/': r = ny === 0 ? NaN : nx / ny; break;
+    default: r = ny;
+  }
+  return Math.round(r * 1e10) / 1e10;
+}
+
+function tryEquals(){
+  if(op === null || b === '') return;
+  lastPendingResult = computeRaw(a, op, b);
+  // "esconde" o valor exibido antes de abrir o paywall
+  valueEl.textContent = '••••••';
+  lockedTag.style.visibility = 'visible';
+  document.getElementById('overlay').classList.add('show');
+}
+
+function selectPlan(el){
+  document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+  render(); // volta a mostrar os números normalmente (sem o resultado final)
+}
+
+function fakePay(){
+  document.getElementById('overlay').classList.remove('show');
+
+  if(lastPendingResult !== null){
+    a = String(lastPendingResult);
+    op = null; b = '';
+    result = lastPendingResult;
+  }
+  lockedTag.style.visibility = 'hidden';
+  render();
+
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+</script>
+
+</body>
+</html>
